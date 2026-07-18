@@ -28,9 +28,12 @@ git -C "${KERNEL_DIR}" fetch --depth 1 origin "${KERNEL_COMMIT}"
 git -C "${KERNEL_DIR}" checkout --detach --force "${KERNEL_COMMIT}"
 git -C "${KERNEL_DIR}" clean -ffdqx
 
-git clone --filter=blob:none --no-checkout "${KSU_REPO}" "${KSU_DIR}"
+if [[ ! -d "${KSU_DIR}/.git" ]]; then
+  git clone --filter=blob:none --no-checkout "${KSU_REPO}" "${KSU_DIR}"
+fi
 git -C "${KSU_DIR}" fetch --depth 1 origin "${KSU_COMMIT}"
 git -C "${KSU_DIR}" checkout --detach --force "${KSU_COMMIT}"
+git -C "${KSU_DIR}" clean -ffdqx
 
 if [[ ! -d "${REKERNEL_DIR}/.git" ]]; then
   git clone --filter=blob:none --no-checkout "${REKERNEL_REPO}" "${REKERNEL_DIR}"

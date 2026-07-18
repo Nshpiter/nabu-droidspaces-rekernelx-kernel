@@ -11,15 +11,18 @@ CLANG_TAG="android-16.0.0_r4"
 CLANG_REVISION="clang-r563880c"
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-WORK_DIR="${ROOT_DIR}/work"
+BUILD_ROOT="${BUILD_ROOT:-/tmp/nk}"
+WORK_DIR="${BUILD_ROOT}/work"
+CACHE_DIR="${ROOT_DIR}/work"
 KERNEL_DIR="${WORK_DIR}/kernel"
 KSU_DIR="${KERNEL_DIR}/KernelSU"
 REKERNEL_DIR="${WORK_DIR}/ReKernel-X"
-OUT_DIR="${ROOT_DIR}/out"
-TOOLCHAIN_DIR="${WORK_DIR}/${CLANG_REVISION}"
-TOOLCHAIN_ARCHIVE="${WORK_DIR}/${CLANG_REVISION}.tar.gz"
+OUT_DIR="${BUILD_ROOT}/out"
+ARTIFACT_DIR="${ROOT_DIR}/out"
+TOOLCHAIN_DIR="${CACHE_DIR}/${CLANG_REVISION}"
+TOOLCHAIN_ARCHIVE="${CACHE_DIR}/${CLANG_REVISION}.tar.gz"
 
-mkdir -p "${WORK_DIR}" "${OUT_DIR}"
+mkdir -p "${WORK_DIR}" "${CACHE_DIR}" "${OUT_DIR}" "${ARTIFACT_DIR}"
 
 if [[ ! -d "${KERNEL_DIR}/.git" ]]; then
   git clone --filter=blob:none --no-checkout "${KERNEL_REPO}" "${KERNEL_DIR}"
@@ -66,7 +69,7 @@ if [[ "${1:-}" == "--prepare-toolchain" ]]; then
   exit 0
 fi
 
-CCACHE_BIN_DIR="${WORK_DIR}/ccache-bin"
+CCACHE_BIN_DIR="${CACHE_DIR}/ccache-bin"
 mkdir -p "${CCACHE_BIN_DIR}"
 ln -sf "$(command -v ccache)" "${CCACHE_BIN_DIR}/clang"
 export PATH="${CCACHE_BIN_DIR}:${TOOLCHAIN_DIR}/bin:${PATH}"
@@ -126,3 +129,7 @@ test -s "${OUT_DIR}/arch/arm64/boot/Image"
   echo "compiler=$(clang --version | head -n 1)"
   echo "image_sha256=$(sha256sum "${OUT_DIR}/arch/arm64/boot/Image" | awk '{print $1}')"
 } > "${OUT_DIR}/build-info.txt"
+
+cp "${OUT_DIR}/arch/arm64/boot/Image" "${ARTIFACT_DIR}/Image"
+cp "${OUT_DIR}/.config" "${ARTIFACT_DIR}/.config"
+cp "${OUT_DIR}/build-info.txt" "${ARTIFACT_DIR}/build-info.txt"

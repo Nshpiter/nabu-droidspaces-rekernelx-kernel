@@ -72,6 +72,8 @@ jobs:
           ccache --zero-stats
 
       - name: Build kernel
+        id: kernel-build
+        continue-on-error: true
         run: |
           chmod +x scripts/build.sh
           scripts/build.sh
@@ -80,10 +82,21 @@ jobs:
         if: always()
         run: ccache --show-stats || true
 
+      - name: Preserve compiler output cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: ~/.cache/ccache
+          key: nabu-ccache-${{ runner.os }}-${{ github.run_id }}
+
+      - name: Propagate build failure
+        if: steps.kernel-build.outcome != 'success'
+        run: exit 1
+
       - name: Collect artifacts
         run: |
           mkdir -p artifacts
-          cp out/arch/arm64/boot/Image artifacts/Image
+          cp out/Image artifacts/Image
           cp out/.config artifacts/kernel.config
           cp out/build-info.txt artifacts/build-info.txt
           sha256sum artifacts/* > artifacts/SHA256SUMS

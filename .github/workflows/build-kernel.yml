@@ -28,17 +28,41 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
-            bc bison build-essential ccache curl flex git libelf-dev \
-            libssl-dev python3 rsync xz-utils
+            bc binutils-aarch64-linux-gnu binutils-arm-linux-gnueabi bison \
+            build-essential ccache curl flex git libelf-dev libssl-dev \
+            python3 rsync xz-utils
 
-      - name: Restore compiler and build caches
+      - name: Restore compiler cache
+        id: toolchain-cache
         uses: actions/cache@v4
         with:
           path: |
             work/clang-r563880c.tar.gz
             work/clang-r563880c
-            ~/.cache/ccache
           key: nabu-r563880c-rekernelx-${{ runner.os }}-v1
+
+      - name: Prepare pinned compiler
+        if: steps.toolchain-cache.outputs.cache-hit != 'true'
+        run: |
+          chmod +x scripts/build.sh
+          scripts/build.sh --prepare-toolchain
+
+      - name: Save compiler cache immediately
+        if: steps.toolchain-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            work/clang-r563880c.tar.gz
+            work/clang-r563880c
+          key: nabu-r563880c-rekernelx-${{ runner.os }}-v1
+
+      - name: Restore compiler output cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ccache
+          key: nabu-ccache-${{ runner.os }}-${{ hashFiles('scripts/build.sh') }}
+          restore-keys: |
+            nabu-ccache-${{ runner.os }}-
 
       - name: Configure ccache
         run: |

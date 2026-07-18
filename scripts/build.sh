@@ -59,6 +59,10 @@ if [[ ! -x "${TOOLCHAIN_DIR}/bin/clang" ]]; then
   tar -xzf "${TOOLCHAIN_ARCHIVE}" -C "${TOOLCHAIN_DIR}"
 fi
 
+if [[ "${1:-}" == "--prepare-toolchain" ]]; then
+  exit 0
+fi
+
 CCACHE_BIN_DIR="${WORK_DIR}/ccache-bin"
 mkdir -p "${CCACHE_BIN_DIR}"
 ln -sf "$(command -v ccache)" "${CCACHE_BIN_DIR}/clang"
@@ -83,6 +87,7 @@ MAKE_ARGS=(
   CLANG_TRIPLE=aarch64-linux-gnu-
   CROSS_COMPILE=aarch64-linux-gnu-
   CROSS_COMPILE_ARM32=arm-linux-gnueabi-
+  KCFLAGS=-Wno-error=gnu-variable-sized-type-not-at-end
 )
 
 make "${MAKE_ARGS[@]}" defconfig

@@ -10,6 +10,8 @@
 
 `configs/nabu-running.config` 直接提取自已验证可启动的 Droidspaces boot；构建只在其基础上启用 ReKernel-X，避免误用上游通用 ARM64 配置。
 
+构建将厂商配置中的 Full LTO 切换为内核原生支持的 ThinLTO，以控制 GitHub Runner 最终链接阶段的内存峰值；LTO 本身仍保持启用。
+
 ## 产物
 
 GitHub Actions 会生成：

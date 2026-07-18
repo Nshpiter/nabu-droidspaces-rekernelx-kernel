@@ -110,13 +110,15 @@ cp "${ROOT_DIR}/configs/nabu-running.config" "${OUT_DIR}/.config"
   --enable DEVTMPFS \
   --enable DEVTMPFS_MOUNT \
   --enable REKERNEL \
-  --disable REKERNEL_NETWORK
+  --disable REKERNEL_NETWORK \
+  --enable THINLTO
 
 make "${MAKE_ARGS[@]}" olddefconfig
 
 grep -q '^CONFIG_KSU=y$' "${OUT_DIR}/.config"
 grep -q '^CONFIG_USER_NS=y$' "${OUT_DIR}/.config"
 grep -q '^CONFIG_REKERNEL=y$' "${OUT_DIR}/.config"
+grep -q '^CONFIG_THINLTO=y$' "${OUT_DIR}/.config"
 
 make -j"$(nproc)" "${MAKE_ARGS[@]}" Image
 

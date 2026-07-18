@@ -1,0 +1,72 @@
+name: Build nabu ReKernel-X kernel
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/build-kernel.yml"
+      - "scripts/build.sh"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nabu-rekernelx-kernel
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+
+    steps:
+      - name: Checkout builder
+        uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            bc bison build-essential ccache curl flex git libelf-dev \
+            libssl-dev python3 rsync xz-utils
+
+      - name: Restore compiler and build caches
+        uses: actions/cache@v4
+        with:
+          path: |
+            work/clang-r563880c.tar.gz
+            work/clang-r563880c
+            ~/.cache/ccache
+          key: nabu-r563880c-rekernelx-${{ runner.os }}-v1
+
+      - name: Configure ccache
+        run: |
+          ccache --set-config=cache_dir="$HOME/.cache/ccache"
+          ccache --set-config=max_size=5G
+          ccache --zero-stats
+
+      - name: Build kernel
+        run: |
+          chmod +x scripts/build.sh
+          scripts/build.sh
+
+      - name: Show ccache statistics
+        if: always()
+        run: ccache --show-stats || true
+
+      - name: Collect artifacts
+        run: |
+          mkdir -p artifacts
+          cp out/arch/arm64/boot/Image artifacts/Image
+          cp out/.config artifacts/kernel.config
+          cp out/build-info.txt artifacts/build-info.txt
+          sha256sum artifacts/* > artifacts/SHA256SUMS
+
+      - name: Upload kernel artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: nabu-droidspaces-rekernelx-kernel
+          path: artifacts/
+          if-no-files-found: error
+          retention-days: 14

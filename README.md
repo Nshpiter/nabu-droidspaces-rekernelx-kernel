@@ -8,6 +8,8 @@
 
 仓库只保存可审计的构建流程，不复制上游内核源码。所有上游依赖均锁定到明确提交。
 
+`configs/nabu-running.config` 直接提取自已验证可启动的 Droidspaces boot；构建只在其基础上启用 ReKernel-X，避免误用上游通用 ARM64 配置。
+
 ## 产物
 
 GitHub Actions 会生成：
@@ -24,4 +26,3 @@ GitHub Actions 会生成：
 - KernelSU: `rsuntk/KernelSU@648e5988cf421172769f80ce07f86331b548c053`
 - ReKernel-X: `myflavor/ReKernel-X@6f9f96dfc725ce12410c8258464a6edd7ec8ca36`
 - Clang: Android `clang-r563880c`
-

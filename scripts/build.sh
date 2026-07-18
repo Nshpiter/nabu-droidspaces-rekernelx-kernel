@@ -93,7 +93,7 @@ MAKE_ARGS=(
   KCFLAGS=-Wno-error=gnu-variable-sized-type-not-at-end
 )
 
-make "${MAKE_ARGS[@]}" defconfig
+cp "${ROOT_DIR}/configs/nabu-running.config" "${OUT_DIR}/.config"
 
 "${KERNEL_DIR}/scripts/config" --file "${OUT_DIR}/.config" \
   --enable KSU \

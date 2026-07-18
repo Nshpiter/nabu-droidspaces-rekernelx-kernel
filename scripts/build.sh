@@ -59,7 +59,10 @@ if [[ ! -x "${TOOLCHAIN_DIR}/bin/clang" ]]; then
   tar -xzf "${TOOLCHAIN_ARCHIVE}" -C "${TOOLCHAIN_DIR}"
 fi
 
-export PATH="${TOOLCHAIN_DIR}/bin:${PATH}"
+CCACHE_BIN_DIR="${WORK_DIR}/ccache-bin"
+mkdir -p "${CCACHE_BIN_DIR}"
+ln -sf "$(command -v ccache)" "${CCACHE_BIN_DIR}/clang"
+export PATH="${CCACHE_BIN_DIR}:${TOOLCHAIN_DIR}/bin:${PATH}"
 export ARCH=arm64
 export SUBARCH=arm64
 export KBUILD_BUILD_USER=piter
@@ -69,8 +72,8 @@ MAKE_ARGS=(
   -C "${KERNEL_DIR}"
   O="${OUT_DIR}"
   ARCH=arm64
-  CC=ccache clang
-  HOSTCC=ccache clang
+  CC=clang
+  HOSTCC=clang
   LD=ld.lld
   AR=llvm-ar
   NM=llvm-nm
